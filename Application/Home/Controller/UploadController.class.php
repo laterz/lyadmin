@@ -21,8 +21,11 @@ class UploadController extends HomeController
     public function upload()
     {
         if (is_login() || (C('AUTH_KEY') === $_SERVER['HTTP_UPLOADTOKEN'])) {
+            // 上传图片
             $return = json_encode(D('Admin/Upload')->upload());
             exit($return);
+        } else {
+            $this->error('游客不允许上传文件！');
         }
     }
 
@@ -32,12 +35,14 @@ class UploadController extends HomeController
      */
     public function download($token)
     {
+        $this->is_login();
+
         if (empty($token)) {
             $this->error('token参数错误！');
         }
 
         //解密下载token
-        $file_md5 = \Think\Crypt::decrypt($token, user_md5(is_login()));
+        $file_md5 = \lyf\Crypt::decrypt($token, user_md5(is_login()));
         if (!$file_md5) {
             $this->error('下载链接已过期，请刷新页面！');
         }
@@ -47,5 +52,15 @@ class UploadController extends HomeController
         if (!$upload_object->download($file_id)) {
             $this->error($upload_object->getError());
         }
+    }
+
+    /**
+     * KindEditor编辑器文件管理
+     * @author jry <598821125@qq.com>
+     */
+    public function fileManager($only_image = true)
+    {
+        $uid = $this->is_login();
+        exit(D('Admin/cUpload')->fileManager($only_image));
     }
 }

@@ -15,25 +15,13 @@ namespace Admin\Controller;
 class UpdateController extends AdminController
 {
     /**
-     * 初始化方法
-     * @author jry <598821125@qq.com>
-     */
-    protected function _initialize()
-    {
-        //只有ID为1的超级管理员才有权限系统更新
-        if (session('user_auth.uid') !== '1') {
-            $this->success('');
-        }
-    }
-
-    /**
      * 检查新版本
      * @author jry <598821125@qq.com>
      */
     public function checkVersion()
     {
         //远程更新地址
-        $url = 'http://www.lingyun.net' . C('UPDATE_URL') . '.html?action=check';
+        $url = 'https://www.lingyun.net' . C('UPDATE_URL') . '.html?action=check';
 
         //参数设置
         $params = array(
@@ -43,7 +31,7 @@ class UpdateController extends AdminController
             'company_name'    => C('COMPANY_NAME'),
             'develop_version' => C('DEVELOP_VERSION'),
             'build_version'   => C('BUILD_VERSION'),
-            'product_model'   => C('PRODUCT_MODEL'),
+            'product_model'   => C('MODEL_NAME'),
             'product_title'   => C('PRODUCT_TITLE'),
             'develop_team'    => C('DEVELOP_TEAM'),
 
@@ -62,7 +50,7 @@ class UpdateController extends AdminController
         $conf_arr = array(
             'post' => $params,
         );
-        $result = json_decode(\Util\Http::fsockopenDownload($url, $conf_arr), true);
+        $result = json_decode(\lyf\Http::fsockopenDownload($url, $conf_arr), true);
 
         if ($result['status'] == 1) {
             $this->ajaxReturn($result);

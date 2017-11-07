@@ -30,11 +30,6 @@ error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
 define('ENV_PRE', 'LY_');
 
 /**
- * 根目录绝对路径
- */
-define('ROOT_PATH', dirname(dirname(dirname(dirname(__DIR__)))));
-
-/**
  * 定义前台标记
  */
 define('MODULE_MARK', 'Home');
@@ -44,6 +39,8 @@ define('MODULE_MARK', 'Home');
  * 安全期间，建议安装调试完成后移动到非WEB目录
  */
 define('APP_PATH', './Application/');
+define('APP_DIR', './Application/');
+define('BUILDER_DIR', APP_DIR . 'Common/util/lyf/builder/');
 
 /**
  * 缓存目录设置
@@ -58,6 +55,11 @@ define('RUNTIME_PATH', './Runtime/');
 define('HTML_PATH', RUNTIME_PATH . 'Html/');
 
 /**
+ * 禁止修改超级管理员密码
+ */
+define('FORBID_EDIT_ADMIN_PWD', false);
+
+/**
  * 包含开发模式数据库连接配置
  */
 if (@$_SERVER[ENV_PRE . 'DEV_MODE'] !== 'true') {
@@ -67,7 +69,16 @@ if (@$_SERVER[ENV_PRE . 'DEV_MODE'] !== 'true') {
 /**
  * 系统调试设置, 项目正式部署后请设置为false
  */
-define('APP_DEBUG', @$_SERVER[ENV_PRE . 'APP_DEBUG'] ?: true);
+if ($_SERVER[ENV_PRE . 'APP_DEBUG'] === 'false') {
+    define('APP_DEBUG', false);
+} elseif ($_SERVER[ENV_PRE . 'APP_DEBUG'] === 'true') {
+    define('APP_DEBUG', true);
+} else {
+    define('APP_DEBUG', true);
+}
+
+// 演示模式
+define('APP_DEMO', false);
 
 /**
  * 系统安装及开发模式检测
@@ -79,10 +90,11 @@ if (is_file('./Data/install.lock') === false && @$_SERVER[ENV_PRE . 'DEV_MODE'] 
 /**
  * Composer
  */
-//require './vendor/autoload.php';
+if (is_file('./vendor/autoload.php')) {
+    require './vendor/autoload.php';
+}
 
 /**
  * 引入核心入口
- * ThinkPHP亦可移动到WEB以外的目录
  */
-require './ThinkPHP/ThinkPHP.php';
+require './Framework/Lingyun.php';

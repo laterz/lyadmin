@@ -8,14 +8,14 @@
 // +----------------------------------------------------------------------
 namespace Admin\Model;
 
-use Common\Model\ModelModel;
+use Common\Model\Model;
 
 /**
  * 插件钩子模型
  * 该类参考了OneThink的部分实现
  * @author jry <598821125@qq.com>
  */
-class HookModel extends ModelModel
+class HookModel extends Model
 {
     /**
      * 数据库表名

@@ -8,13 +8,13 @@
 // +----------------------------------------------------------------------
 namespace Admin\Model;
 
-use Common\Model\ModelModel;
+use Common\Model\Model;
 
 /**
  * 管理员与用户组对应关系模型
  * @author jry <598821125@qq.com>
  */
-class AccessModel extends ModelModel
+class AccessModel extends Model
 {
     /**
      * 数据库表名

@@ -8,13 +8,13 @@
 // +----------------------------------------------------------------------
 namespace Admin\Model;
 
-use Common\Model\ModelModel;
+use Common\Model\Model;
 
 /**
  * 文章模型
  * @author jry <598821125@qq.com>
  */
-class PostModel extends ModelModel
+class PostModel extends Model
 {
     /**
      * 数据库真实表名

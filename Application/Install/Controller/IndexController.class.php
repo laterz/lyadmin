@@ -8,10 +8,10 @@
 // +----------------------------------------------------------------------
 namespace Install\Controller;
 
+use lyf\Str;
 use Think\Controller;
 use Think\Db;
 use Think\Storage;
-use Util\Str;
 
 /**
  * 安装控制器
@@ -22,7 +22,7 @@ class IndexController extends Controller
     protected function _initialize()
     {
         $no_verify = array('index', 'step1', 'complete');
-        if (in_array(ACTION_NAME, $no_verify)) {
+        if (in_array(request()->action(), $no_verify)) {
             return true;
         }
         if (Storage::has('./Data/install.lock')) {
@@ -50,7 +50,7 @@ class IndexController extends Controller
     // 安装第二步，检测运行所需的环境设置
     public function step2()
     {
-        if (IS_AJAX) {
+        if (request()->isAjax()) {
             if (session('error')) {
                 $this->error('环境检测没有通过，请调整环境后重试！');
             } else {
@@ -79,10 +79,10 @@ class IndexController extends Controller
     // 安装第三步，创建数据库
     public function step3($db = null)
     {
-        if (IS_POST) {
+        if (request()->isPost()) {
             //检测数据库配置
-            if (!is_array($db) || empty($db['DB_TYPE'])
-                || empty($db['DB_HOST']) || empty($db['DB_NAME'])
+            if (!is_array($db) || empty($db['DB_TYPE']) || empty($db['DB_HOST'])
+                || empty($db['DB_PORT']) || empty($db['DB_NAME'])
                 || empty($db['DB_USER']) || empty($db['DB_PREFIX'])) {
                 $this->error('请填写完整的数据库配置');
             } else {
@@ -91,7 +91,7 @@ class IndexController extends Controller
 
                 //创建数据库连接
                 $db_name = $db['DB_NAME'];
-                unset($db['DB_NAME']); //防止不存在的数据库导致连接数据库失败
+                unset($db['DB_NAME']); // 防止不存在的数据库导致连接数据库失败
                 $db_instance = Db::getInstance($db);
 
                 //检测数据库连接
@@ -128,9 +128,6 @@ class IndexController extends Controller
     // 安装第四步，安装数据表，创建配置文件
     public function step4()
     {
-        if (session('step') !== '3') {
-            $this->error('请按顺序安装', U('step3'));
-        }
         session('step', '4');
         session('error', false);
         $this->assign('meta_title', "step4");
@@ -157,7 +154,7 @@ class IndexController extends Controller
 SQL;
         $result = $db_instance->execute($sql);
         if (!$result) {
-            $this->error('写入系统加密KEY或管理员新密码出错！');
+            $this->error('管理员新密码设置出错！');
         }
 
         if (session('error')) {

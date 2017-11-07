@@ -20,6 +20,27 @@ class IndexController extends AdminController
      */
     public function index()
     {
+        $index_count['module'] = D('Admin/Module')->count();
+        $index_count['addon']  = D('Admin/Addon')->count();
+        $index_count['users']  = D('Admin/User')->count();
+
+        // 查询今天注册用户
+        $start_date         = strtotime(date('Y-m-d', time())); //今天
+        $end_date           = $start_date + 86400;
+        $map['create_time'] = array(
+            array('egt', $start_date),
+            array('lt', $end_date),
+        );
+        $index_count['today'] = D('Admin/User')->where($map)->count();
+
+        // 查询实时在线用户
+        $con                   = array();
+        $con['update_time']    = array('gt', time() - 180);
+        $con['uid']            = array('gt', 0);
+        $index_count['online'] = M('admin_session')->where($con)->count();
+
+        // 模板赋值
+        $this->assign('index_count', $index_count);
         $this->assign('meta_title', "首页");
         $this->display();
     }
@@ -30,7 +51,7 @@ class IndexController extends AdminController
      */
     public function removeRuntime()
     {
-        $file   = new \Util\File();
+        $file   = new \lyf\File();
         $result = $file->del_dir(RUNTIME_PATH);
         if ($result) {
             $this->success("缓存清理成功");

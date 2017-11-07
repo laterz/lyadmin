@@ -39,9 +39,7 @@ abstract class Addon
         $this->view                         = \Think\Think::instance('Think\View');
         $this->addon_path                   = C('ADDON_PATH') . $this->getName() . '/';
         $TMPL_PARSE_STRING                  = C('TMPL_PARSE_STRING');
-        $TMPL_PARSE_STRING['__ADDONROOT__'] = __ROOT__
-        . '/Addons/'
-        . $this->getName();
+        $TMPL_PARSE_STRING['__ADDONROOT__'] = __ROOT__ . '/Addons/' . $this->getName();
         C('TMPL_PARSE_STRING', $TMPL_PARSE_STRING);
         if (is_file($this->addon_path . 'config.php')) {
             $this->config_file = $this->addon_path . 'config.php';
@@ -68,7 +66,7 @@ abstract class Addon
     final protected function display($file = '')
     {
         if ($file == '') {
-            $file = CONTROLLER_NAME;
+            $file = request()->controller();
         }
         if (MODULE_MARK === 'Home') {
             if (C('CURRENT_THEME')) {
@@ -76,14 +74,14 @@ abstract class Addon
                 if (is_file($template)) {
                     $file = $template;
                 }
-                if (IS_WAP) {
+                if (request()->isMobile()) {
                     $wap_template = './Theme/' . C('CURRENT_THEME') . '/Home/Wap/Addons/' . $this->getName() . '/' . $file . '.html';
                     if (is_file($wap_template)) {
                         $file = $wap_template;
                     }
                 }
             } else {
-                if (IS_WAP) {
+                if (request()->isMobile()) {
                     $wap_template = './Addons/' . $this->getName() . '/Wap/' . $file . '.html';
                     if (is_file($wap_template)) {
                         $file = $wap_template;
@@ -112,8 +110,11 @@ abstract class Addon
      * 用于显示模板的方法
      * @author jry <598821125@qq.com>
      */
-    final protected function fetch($templateFile = CONTROLLER_NAME)
+    final protected function fetch($templateFile = '')
     {
+        if ('' == $templateFile) {
+            $templateFile = request()->controller();
+        }
         if (!is_file($templateFile)) {
             $templateFile = $this->addon_path
             . $templateFile

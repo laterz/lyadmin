@@ -8,13 +8,13 @@
 // +----------------------------------------------------------------------
 namespace Admin\Model;
 
-use Common\Model\ModelModel;
+use Common\Model\Model;
 
 /**
  * 部门模型
  * @author jry <598821125@qq.com>
  */
-class GroupModel extends ModelModel
+class GroupModel extends Model
 {
     /**
      * 数据库表名
@@ -55,7 +55,7 @@ class GroupModel extends ModelModel
             $group_info = $this->find($user_group);
             // 获得当前登录用户所属部门的权限列表
             $group_auth = json_decode($group_info['menu_auth'], true);
-            if (in_array($current_menu['id'], $group_auth[MODULE_NAME])) {
+            if (in_array($current_menu['id'], $group_auth[request()->module()])) {
                 return true;
             }
         } else {

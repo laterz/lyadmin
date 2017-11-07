@@ -23,7 +23,7 @@ function check_env()
         ),
         'php'    => array(
             'title'   => 'PHP版本',
-            'limit'   => '5.3+',
+            'limit'   => '5.4+',
             'current' => PHP_VERSION,
             'icon'    => 'fa-check text-success',
         ),
@@ -41,14 +41,14 @@ function check_env()
         ),
         'disk'   => array(
             'title'   => '磁盘空间',
-            'limit'   => '100M+',
+            'limit'   => '200M+',
             'current' => '未知',
             'icon'    => 'fa-check text-success',
         ),
     );
 
     //PHP环境检测
-    if ($items['php']['current'] < 5.3) {
+    if ($items['php']['current'] < 5.4) {
         $items['php']['icon'] = 'fa-remove text-danger';
         session('error', true);
     }
@@ -68,7 +68,7 @@ function check_env()
     if (function_exists('disk_free_space')) {
         $disk_size                = floor(disk_free_space('./') / (1024 * 1024)) . 'M';
         $items['disk']['current'] = $disk_size . 'MB';
-        if ($disk_size < 100) {
+        if ($disk_size < 200) {
             $items['disk']['icon'] = 'fa-remove text-danger';
             session('error', true);
         }
@@ -245,11 +245,13 @@ function write_config($config, $auth)
     if (is_array($config)) {
         //读取配置内容
         $conf = file_get_contents(MODULE_PATH . 'Data/config.tpl');
+
         //替换配置项
         foreach ($config as $name => $value) {
             $conf = str_replace("[{$name}]", $value, $conf);
         }
         $conf = str_replace('[AUTH_KEY]', $auth, $conf);
+
         //写入应用配置文件
         if (file_put_contents('./Data/db.php', $conf)) {
             show_msg('配置文件写入成功');

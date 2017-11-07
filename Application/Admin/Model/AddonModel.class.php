@@ -8,14 +8,14 @@
 // +----------------------------------------------------------------------
 namespace Admin\Model;
 
-use Common\Model\ModelModel;
+use Common\Model\Model;
 
 /**
  * 插件模型
  * 该类参考了OneThink的部分实现
  * @author jry <598821125@qq.com>
  */
-class AddonModel extends ModelModel
+class AddonModel extends Model
 {
     /**
      * 数据库表名
@@ -80,7 +80,8 @@ class AddonModel extends ModelModel
         foreach ($dirs as $value) {
             if (!isset($addons[$value])) {
                 $class = get_addon_class($value);
-                if (!class_exists($class)) { // 实例化插件失败忽略执行
+                if (!class_exists($class)) {
+                    // 实例化插件失败忽略执行
                     \Think\Log::record('插件' . $value . '的入口文件不存在！');
                     continue;
                 }
@@ -91,39 +92,77 @@ class AddonModel extends ModelModel
                 }
             }
         }
-        foreach ($addons as &$val) {
-            switch ($val['status']) {
-                case '-1': // 未安装
-                    $val['status']                               = '<i class="fa fa-trash" style="color:red"></i>';
-                    $val['right_button']['install']['title']     = '安装';
-                    $val['right_button']['install']['attribute'] = 'class="label label-success ajax-get" href="' . U('install', array('addon_name' => $val['name'])) . '"';
-                    break;
-                case '0': // 禁用
-                    $val['status']                                 = '<i class="fa fa-ban" style="color:red"></i>';
-                    $val['right_button']['config']['title']        = '设置';
-                    $val['right_button']['config']['attribute']    = 'class="label label-info" href="' . U('config', array('id' => $val['id'])) . '"';
-                    $val['right_button']['forbid']['title']        = '启用';
-                    $val['right_button']['forbid']['attribute']    = 'class="label label-success ajax-get" href="' . U('setStatus', array('status' => 'resume', 'ids' => $val['id'])) . '"';
-                    $val['right_button']['uninstall']['title']     = '卸载';
-                    $val['right_button']['uninstall']['attribute'] = 'class="label label-danger ajax-get" href="' . U('uninstall', array('id' => $val['id'])) . '"';
-                    if ($val['adminlist']) {
-                        $val['right_button']['adminlist']['title']     = '数据管理';
-                        $val['right_button']['adminlist']['attribute'] = 'class="label label-success" href="' . U('adminlist', array('name' => $val['name'])) . '"';
-                    }
-                    break;
-                case '1': // 正常
-                    $val['status']                                 = '<i class="fa fa-check" style="color:green"></i>';
-                    $val['right_button']['config']['title']        = '设置';
-                    $val['right_button']['config']['attribute']    = 'class="label label-info" href="' . U('config', array('id' => $val['id'])) . '"';
-                    $val['right_button']['forbid']['title']        = '禁用';
-                    $val['right_button']['forbid']['attribute']    = 'class="label label-warning ajax-get" href="' . U('setStatus', array('status' => 'forbid', 'ids' => $val['id'])) . '"';
-                    $val['right_button']['uninstall']['title']     = '卸载';
-                    $val['right_button']['uninstall']['attribute'] = 'class="label label-danger ajax-get" href="' . U('uninstall', array('id' => $val['id'])) . '"';
-                    if ($val['adminlist']) {
-                        $val['right_button']['adminlist']['title']     = '数据管理';
-                        $val['right_button']['adminlist']['attribute'] = 'class="label label-success" href="' . U('adminlist', array('name' => $val['name'])) . '"';
-                    }
-                    break;
+        if (C('ADMIN_TABS')) {
+            foreach ($addons as &$val) {
+                switch ($val['status']) {
+                    case '-1': // 未安装
+                        $val['status_icon']                          = '<i class="label label-primary">未安装</i>';
+                        $val['right_button']['install']['title']     = '安装';
+                        $val['right_button']['install']['attribute'] = 'class="label label-success-outline label-pill" href="' . U('install_before', array('addon_name' => $val['name'])) . '"';
+                        break;
+                    case '0': // 禁用
+                        $val['status_icon'] = '<i class="label label-warning">已禁用</i>';
+                        if ($val['adminlist']) {
+                            $val['right_button']['adminlist']['title']     = '管理';
+                            $val['right_button']['adminlist']['attribute'] = 'class="label label-success label-pill open-tab-in-fiframe" title="' . $val['title'] . '" tab-name="' . $val['name'] . '_admin" href="' . U('adminlist', array('addon_name' => $val['name'])) . '"';
+                        }
+                        $val['right_button']['config']['title']        = '设置';
+                        $val['right_button']['config']['attribute']    = 'class="label label-info-outline label-pill open-tab-in-fiframe" title="' . $val['title'] . '" tab-name="' . $val['name'] . '_config" href="' . U('config', array('id' => $val['id'])) . '"';
+                        $val['right_button']['forbid']['title']        = '启用';
+                        $val['right_button']['forbid']['attribute']    = 'class="label label-success-outline label-pill ajax-get" href="' . U('setStatus', array('status' => 'resume', 'ids' => $val['id'])) . '"';
+                        $val['right_button']['uninstall']['title']     = '卸载';
+                        $val['right_button']['uninstall']['attribute'] = 'class="label label-danger-outline label-pill" href="' . U('uninstall_before', array('id' => $val['id'])) . '"';
+                        break;
+                    case '1': // 正常
+                        $val['status_icon'] = '<i class="label label-success">已安装</i>';
+                        if ($val['adminlist']) {
+                            $val['right_button']['adminlist']['title']     = '管理';
+                            $val['right_button']['adminlist']['attribute'] = 'class="label label-success label-pill open-tab-in-fiframe" title="' . $val['title'] . '" tab-name="' . $val['name'] . '_admin" href="' . U('adminlist', array('addon_name' => $val['name'])) . '"';
+                        }
+                        $val['right_button']['config']['title']        = '设置';
+                        $val['right_button']['config']['attribute']    = 'class="label label-info-outline label-pill open-tab-in-fiframe" title="' . $val['title'] . '" tab-name="' . $val['name'] . '_config" href="' . U('config', array('id' => $val['id'])) . '"';
+                        $val['right_button']['forbid']['title']        = '禁用';
+                        $val['right_button']['forbid']['attribute']    = 'class="label label-warning-outline label-pill ajax-get" href="' . U('setStatus', array('status' => 'forbid', 'ids' => $val['id'])) . '"';
+                        $val['right_button']['uninstall']['title']     = '卸载';
+                        $val['right_button']['uninstall']['attribute'] = 'class="label label-danger-outline label-pill" href="' . U('uninstall_before', array('id' => $val['id'])) . '"';
+                        break;
+                }
+            }
+        } else {
+            foreach ($addons as &$val) {
+                switch ($val['status']) {
+                    case '-1': // 未安装
+                        $val['status_icon']                          = '<i class="label label-primary">未安装</i>';
+                        $val['right_button']['install']['title']     = '安装';
+                        $val['right_button']['install']['attribute'] = 'class="label label-success-outline label-pill" href="' . U('install_before', array('addon_name' => $val['name'])) . '"';
+                        break;
+                    case '0': // 禁用
+                        $val['status_icon'] = '<i class="label label-warning">已禁用</i>';
+                        if ($val['adminlist']) {
+                            $val['right_button']['adminlist']['title']     = '管理';
+                            $val['right_button']['adminlist']['attribute'] = 'class="label label-success label-pill" href="' . U('adminlist', array('addon_name' => $val['name'])) . '"';
+                        }
+                        $val['right_button']['config']['title']        = '设置';
+                        $val['right_button']['config']['attribute']    = 'class="label label-info-outline label-pill" href="' . U('config', array('id' => $val['id'])) . '"';
+                        $val['right_button']['forbid']['title']        = '启用';
+                        $val['right_button']['forbid']['attribute']    = 'class="label label-success-outline label-pill ajax-get" href="' . U('setStatus', array('status' => 'resume', 'ids' => $val['id'])) . '"';
+                        $val['right_button']['uninstall']['title']     = '卸载';
+                        $val['right_button']['uninstall']['attribute'] = 'class="label label-danger-outline label-pill" href="' . U('uninstall_before', array('id' => $val['id'])) . '"';
+                        break;
+                    case '1': // 正常
+                        $val['status_icon'] = '<i class="label label-success">已安装</i>';
+                        if ($val['adminlist']) {
+                            $val['right_button']['adminlist']['title']     = '管理';
+                            $val['right_button']['adminlist']['attribute'] = 'class="label label-success label-pill" href="' . U('adminlist', array('addon_name' => $val['name'])) . '"';
+                        }
+                        $val['right_button']['config']['title']        = '设置';
+                        $val['right_button']['config']['attribute']    = 'class="label label-info-outline label-pill" href="' . U('config', array('id' => $val['id'])) . '"';
+                        $val['right_button']['forbid']['title']        = '禁用';
+                        $val['right_button']['forbid']['attribute']    = 'class="label label-warning-outline label-pill ajax-get" href="' . U('setStatus', array('status' => 'forbid', 'ids' => $val['id'])) . '"';
+                        $val['right_button']['uninstall']['title']     = '卸载';
+                        $val['right_button']['uninstall']['attribute'] = 'class="label label-danger-outline label-pill" href="' . U('uninstall_before', array('id' => $val['id'])) . '"';
+                        break;
+                }
             }
         }
         return $addons;

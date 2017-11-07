@@ -8,13 +8,13 @@
 // +----------------------------------------------------------------------
 namespace Admin\Model;
 
-use Common\Model\ModelModel;
+use Common\Model\Model;
 
 /**
  * 配置模型
  * @author jry <598821125@qq.com>
  */
-class ConfigModel extends ModelModel
+class ConfigModel extends Model
 {
     /**
      * 数据库表名
@@ -59,7 +59,7 @@ class ConfigModel extends ModelModel
         foreach ($list as $key => $val) {
             switch ($val['type']) {
                 case 'array':
-                    $config[$val['name']] = \Util\Str::parseAttr($val['value']);
+                    $config[$val['name']] = \lyf\Str::parseAttr($val['value']);
                     break;
                 case 'checkbox':
                     $config[$val['name']] = explode(',', $val['value']);

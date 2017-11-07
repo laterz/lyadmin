@@ -8,14 +8,14 @@
 // +----------------------------------------------------------------------
 namespace Home\Controller;
 
-use Common\Controller\ControllerController;
+use Common\Controller\Controller;
 
 /**
  * 前台公共控制器
  * 为防止多分组Controller名称冲突，公共Controller名称统一使用模块名
  * @author jry <598821125@qq.com>
  */
-class HomeController extends ControllerController
+class HomeController extends Controller
 {
     /**
      * 用户信息
@@ -31,19 +31,27 @@ class HomeController extends ControllerController
     {
         // 系统开关
         if (!C('TOGGLE_WEB_SITE')) {
-            $this->error('站点已经关闭，请稍后访问~');
+            exit('站点已经关闭，请稍后访问~');
         }
 
         // 监听行为扩展
         try {
-            \Think\Hook::listen('corethink_behavior');
+            \Think\Hook::listen('lingyun_behavior');
         } catch (\Exception $e) {
             file_put_contents(RUNTIME_PATH . 'error.json', json_encode($e->getMessage()));
         }
 
-        // 记录当前url
-        if (MODULE_NAME !== 'User' && IS_GET === true) {
-            cookie('forward', (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER["REQUEST_URI"]);
+        // 获取用户信息
+        $uid = is_login();
+        if ($uid) {
+            $user_info = D('Admin/User')->getUserInfo($uid);
+            if (!$user_info || $user_info['status'] !== '1') {
+                session('user_auth', null);
+                session('user_auth_sign', null);
+                exit('您的帐号已被禁用或删除，请重新访问!');
+            }
+            $this->user_info = $user_info;
+            $this->assign('user_info', $user_info);
         }
     }
 
@@ -58,10 +66,10 @@ class HomeController extends ControllerController
         if ($uid) {
             return $uid;
         } else {
-            if (IS_AJAX) {
-                $this->error('请先登录系统', U('User/User/login', '', true, true), array('login' => 1));
-            } else {
+            if (request()->isGet() && !request()->isAjax()) {
                 redirect(U('User/User/login', '', true, true));
+            } else {
+                $this->error('请先登录系统', U('User/User/login', '', true, true), array('login' => 1));
             }
         }
     }
@@ -96,7 +104,7 @@ class HomeController extends ControllerController
         if ($user_info['cert_info']) {
             return $user_info['id'];
         } else {
-            if (IS_AJAX) {
+            if (request()->isAjax()) {
                 $this->error('请先实名认证', U('User/Cert/index', '', true, true));
             } else {
                 redirect(U('User/Cert/index', '', true, true));
